@@ -1,31 +1,12 @@
 import ArticleList from '@/components/ArticleList'
 import BlogTitle from '@/components/BlogTitle'
-import { readFile, readdir } from 'fs/promises'
-import path from 'path'
-import matter from 'gray-matter'
+import ProjectList from '@/components/ProjectList'
+import findAllArticles from '@/controllers/article/findAllArticles'
+import findAllProjects from '@/controllers/project/findAllProjects'
 
 export default async function Home () {
-  const articlesPath = path.join(process.cwd(), 'src', 'data', 'articles')
-  const allArticlesPaths = await readdir(articlesPath)
-  const allArticlesSlugs = allArticlesPaths.map(filename => filename.replace('.md', ''))
-
-  const articleReadPromises = allArticlesSlugs.map(async slug => {
-    const articleStringContent = await readFile(
-      path.join(process.cwd(), 'src', 'data', 'articles', `${slug}.md`),
-      'utf8'
-    )
-    const parsedArticle = matter(articleStringContent)
-
-    return {
-      title: parsedArticle.data.title,
-      description: parsedArticle.data.description,
-      slug,
-      content: parsedArticle.content
-    }
-  })
-
-  const articles = await Promise.all(articleReadPromises)
-
+  const articles = await findAllArticles()
+  const projects = await findAllProjects()
   return (
     <main>
       <BlogTitle
@@ -34,6 +15,9 @@ export default async function Home () {
       />
       <ArticleList
         articles={articles}
+      />
+      <ProjectList
+        projects={projects}
       />
     </main>
   )

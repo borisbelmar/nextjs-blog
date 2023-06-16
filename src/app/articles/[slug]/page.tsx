@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown'
 import BlogTitle from '@/components/BlogTitle'
 import findArticleBySlug from '@/controllers/article/findArticleBySlug'
+import { notFound } from 'next/navigation'
 
 interface ArticleDetailPageProps {
   params: {
@@ -8,8 +9,25 @@ interface ArticleDetailPageProps {
   }
 }
 
+export async function generateMetadata ({ params }: ArticleDetailPageProps) {
+  const article = await findArticleBySlug(params.slug)
+
+  if (article === null) {
+    notFound()
+  }
+
+  return {
+    title: article.title,
+    description: article.description
+  }
+}
+
 export default async function ArticleDetailPage ({ params }: ArticleDetailPageProps) {
   const article = await findArticleBySlug(params.slug)
+
+  if (article === null) {
+    notFound()
+  }
 
   return (
     <main>

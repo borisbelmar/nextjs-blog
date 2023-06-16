@@ -1,22 +1,18 @@
 import { readdir } from 'fs/promises'
-import path from 'path'
+import type { Article } from '@/@types/Article'
 import readArticleFile from './utils/readArticleFile'
+import getDataFolderPath from '../utils/getDataFolderPath'
 
 export default async function findAllArticles () {
-  const articlesPath = path.join(process.cwd(), 'src', 'data', 'articles')
+  const articlesPath = getDataFolderPath('articles')
   const allArticlesPaths = await readdir(articlesPath)
   const allArticlesSlugs = allArticlesPaths.map(filename => filename.replace('.md', ''))
 
   const articleReadPromises = allArticlesSlugs.map(async slug => {
-    const parsedArticle = await readArticleFile(slug)
-
-    return {
-      title: parsedArticle.data.title,
-      description: parsedArticle.data.description,
-      slug,
-      content: parsedArticle.content
-    }
+    return await readArticleFile(slug)
   })
 
-  return await Promise.all(articleReadPromises)
+  const articles = await Promise.all(articleReadPromises)
+
+  return articles.filter(article => article !== null) as Article[]
 }
